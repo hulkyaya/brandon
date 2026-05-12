@@ -199,17 +199,6 @@ tbody td:first-child{color:var(--text);font-weight:600;font-size:13px}
 .pstrip{animation:fu .4s .06s both}
 .tcard{animation:fu .4s .1s both}
 .ccard{animation:fu .4s .14s both}
-
-/* 출고이력 서브탭 */
-.ptab{background:#FFFFFF;border:none;color:var(--t3);font-size:12px;font-weight:600;font-family:'Noto Sans KR',sans-serif;padding:6px 14px;cursor:pointer;transition:all .15s;border-right:1px solid var(--bd2)}
-.ptab:last-child{border-right:none}
-.ptab.act{background:var(--navy);color:#FFFFFF}
-.ptab:not(.act):hover{background:var(--sf2);color:var(--navy)}
-/* 출고이력 KPI mini */
-.hkpi{padding:16px 20px;border-right:1px solid var(--bd)}
-.hkpi:last-child{border-right:none}
-.hkpi-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:6px}
-.hkpi-val{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:700;color:var(--navy)}
 </style>
 </head>
 <body>
@@ -232,7 +221,6 @@ tbody td:first-child{color:var(--text);font-weight:600;font-size:13px}
   <div class="view-tabs">
     <button class="vtab act" id="tabList" onclick="switchView('list')">📋 목록</button>
     <button class="vtab" id="tabMap" onclick="switchView('map')">🗺️ 지도</button>
-    <button class="vtab" id="tabHist" onclick="switchView('hist')">📦 출고이력</button>
   </div>
   <div id="listView">
     <div class="grid">
@@ -283,79 +271,7 @@ tbody td:first-child{color:var(--text);font-weight:600;font-size:13px}
       <div class="map-footer" id="mapFoot"></div>
     </div>
   </div>
-  <!-- 출고이력 탭 -->
-  <div id="histView" style="display:none">
-    <div class="tcard" style="margin-bottom:20px">
-      <div class="thdr">
-        <div class="ttitle">출고이력</div>
-        <div class="tactions">
-          <!-- 기간 단위 서브탭 -->
-          <div style="display:flex;border:1px solid var(--bd2);border-radius:var(--r);overflow:hidden">
-            <button class="ptab act" id="pt_year" onclick="setPeriod('year')">연도별</button>
-            <button class="ptab" id="pt_month" onclick="setPeriod('month')">월별</button>
-            <button class="ptab" id="pt_week" onclick="setPeriod('week')">주별</button>
-            <button class="ptab" id="pt_day" onclick="setPeriod('day')">일별</button>
-          </div>
-          <!-- 연도 필터 -->
-          <select class="flt" id="hfy" onchange="renderHist()" style="width:90px"></select>
-          <!-- 월 필터 (일별일때만) -->
-          <select class="flt" id="hfm" onchange="renderHist()" style="width:70px;display:none"></select>
-          <button class="btn-add" onclick="openShipM()">+ 출고 등록</button>
-        </div>
-      </div>
-      <!-- 요약 KPI -->
-      <div id="histKpi" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid var(--bd)"></div>
-      <!-- 차트 -->
-      <div style="padding:20px 24px 10px;border-bottom:1px solid var(--bd)">
-        <canvas id="histChart" height="90"></canvas>
-      </div>
-      <!-- 테이블 -->
-      <div class="tscroll">
-        <table>
-          <thead><tr>
-            <th>날짜</th>
-            <th>거래처명</th>
-            <th>제품</th>
-            <th>업종</th>
-            <th>출고 수량</th>
-            <th>비고</th>
-            <th>관리</th>
-          </tr></thead>
-          <tbody id="htb"></tbody>
-        </table>
-      </div>
-      <div class="pgfoot"><div id="hpgi"></div><div class="pgbs" id="hpgbs"></div></div>
-    </div>
-  </div>
 </main>
-
-<!-- 출고 등록 모달 -->
-<div class="ov" id="shipOv">
-  <div class="modal">
-    <div class="mt" id="shipMtitle">출고 등록</div>
-    <div class="fgr">
-      <div class="fg"><label>날짜</label><input id="shipDate" type="date"/></div>
-      <div class="fg"><label>출고 수량 (대)</label><input id="shipQty" type="number" min="1" placeholder="0"/></div>
-    </div>
-    <div class="fg"><label>거래처명</label><input id="shipName" placeholder="거래처명 입력"/></div>
-    <div class="fgr">
-      <div class="fg"><label>제품</label><select id="shipProd"><option>에어리소닉</option><option>소닉플로우</option><option>슈퍼플로우</option><option>오아 퀵차지팩</option><option>보아르 플라미오 히터</option><option>기타</option></select></div>
-      <div class="fg"><label>업종</label><select id="shipCat"><option>스포츠센터</option><option>아파트커뮤니티</option><option>워터파크</option><option>찜질방/사우나</option><option>호텔&amp;리조트</option><option>펜션</option><option>펜션/게하</option><option>스튜디오</option><option>기타</option></select></div>
-    </div>
-    <div class="fg"><label>비고</label><input id="shipNote" placeholder="메모 (선택)"/></div>
-    <div class="mfoot"><button class="bcan" onclick="closeShipM()">취소</button><button class="bsav" id="shipSavBtn" onclick="saveShip()">저장</button></div>
-  </div>
-</div>
-
-<!-- 출고이력 삭제 확인 -->
-<div class="ov" id="shipCv">
-  <div class="cmod">
-    <div class="cico">🗑️</div>
-    <div class="cmsg"><span class="cnm" id="shipCnm"></span><br>출고이력을 삭제하시겠습니까?</div>
-    <div class="cbs"><button class="bcan" onclick="closeShipCv()">취소</button><button class="bdel" onclick="doDelShip()">삭제</button></div>
-  </div>
-</div>
-
 <div class="ov" id="ov">
   <div class="modal">
     <div class="mt" id="mtitle">제휴처 추가</div>
@@ -815,17 +731,15 @@ function rcharts(){
 function getCoord(p){if(p.lat&&p.lng)return[p.lat,p.lng];return null;}
 function mkIcon(col){return L.divIcon({className:'',html:`<div style="width:10px;height:10px;border-radius:2px;background:${col};border:2px solid rgba(255,255,255,.95);box-shadow:0 2px 6px rgba(0,0,0,.3)"></div>`,iconSize:[10,10],iconAnchor:[5,5],popupAnchor:[0,-8]});}
 function switchView(v){
-  ['list','map','hist'].forEach(x=>{
-    document.getElementById(x+'View').style.display=x===v?'block':'none';
-  });
-  document.getElementById('tabList').classList.toggle('act',v==='list');
-  document.getElementById('tabMap').classList.toggle('act',v==='map');
-  document.getElementById('tabHist').classList.toggle('act',v==='hist');
   if(v==='map'){
+    document.getElementById('listView').style.display='none';document.getElementById('mapView').style.display='block';
+    document.getElementById('tabList').classList.remove('act');document.getElementById('tabMap').classList.add('act');
     if(!leafMap){leafMap=L.map('leafMap').setView([36.5,127.8],7);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(leafMap);mGrp=L.layerGroup().addTo(leafMap);}
     renderMarkers();
+  }else{
+    document.getElementById('mapView').style.display='none';document.getElementById('listView').style.display='block';
+    document.getElementById('tabList').classList.add('act');document.getElementById('tabMap').classList.remove('act');
   }
-  if(v==='hist') renderHist();
 }
 function renderMarkers(){
   if(!leafMap)return;mGrp.clearLayers();
@@ -858,207 +772,12 @@ function closeCv(){document.getElementById('cv').classList.remove('open');did=nu
 async function doDel(){if(!did)return;try{await db.collection('partners').doc(did).delete();}catch(err){alert('삭제 실패: '+err.message);}closeCv();}
 document.getElementById('ov').addEventListener('click',ev=>{if(ev.target===ev.currentTarget)closeM();});
 document.getElementById('cv').addEventListener('click',ev=>{if(ev.target===ev.currentTarget)closeCv();});
-document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){closeM();closeCv();closeShipM();closeShipCv();}});
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){closeM();closeCv();}});
 function expCSV(){
   const f=gf();const rows=[['거래처명','제품','업종','수량'],...f.map(p=>[p.name,p.product,p.category,p.qty])];
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"` ).join(',')).join('\n');
   const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`OA제휴처현황_${new Date().toISOString().slice(0,10)}.csv`;a.click();
 }
-// ── 출고이력 ──────────────────────────────────────────
-let ships=[],shipEid=null,shipDid=null,histChart=null,hPeriod='year',hPg=1,hPs=20;
-
-// Firestore 실시간 구독
-db.collection('shipments').orderBy('date','desc').onSnapshot(snap=>{
-  ships=snap.docs.map(d=>({...d.data(),_id:d.id}));
-  if(document.getElementById('histView').style.display!=='none') renderHist();
-});
-
-function setPeriod(p){
-  hPeriod=p;hPg=1;
-  ['year','month','week','day'].forEach(x=>{
-    document.getElementById('pt_'+x).classList.toggle('act',x===p);
-  });
-  document.getElementById('hfm').style.display=p==='day'?'':'none';
-  renderHist();
-}
-
-function initHistFilters(){
-  const years=[...new Set(ships.map(s=>s.date.slice(0,4)))].sort().reverse();
-  const hfy=document.getElementById('hfy');
-  const cur=hfy.value;
-  hfy.innerHTML='<option value="">전체 연도</option>'+years.map(y=>`<option value="${y}">${y}년</option>`).join('');
-  if(cur)hfy.value=cur;
-  // 월 필터
-  const yr=hfy.value||new Date().getFullYear().toString();
-  const months=[...new Set(ships.filter(s=>s.date.startsWith(yr)).map(s=>s.date.slice(5,7)))].sort().reverse();
-  const hfm=document.getElementById('hfm');
-  const curm=hfm.value;
-  hfm.innerHTML='<option value="">전체 월</option>'+months.map(m=>`<option value="${m}">${parseInt(m)}월</option>`).join('');
-  if(curm)hfm.value=curm;
-}
-
-function getISOWeek(d){
-  const date=new Date(d);
-  date.setHours(0,0,0,0);
-  date.setDate(date.getDate()+3-(date.getDay()+6)%7);
-  const week1=new Date(date.getFullYear(),0,4);
-  return Math.round(((date-week1)/86400000-3+(week1.getDay()+6)%7)/7)+1;
-}
-
-function groupShips(data){
-  const yr=document.getElementById('hfy').value;
-  const mo=document.getElementById('hfm').value;
-  let filtered=data;
-  if(yr)filtered=filtered.filter(s=>s.date.startsWith(yr));
-  if(mo&&hPeriod==='day')filtered=filtered.filter(s=>s.date.slice(5,7)===mo);
-
-  const map={};
-  filtered.forEach(s=>{
-    let key;
-    if(hPeriod==='year') key=s.date.slice(0,4)+'년';
-    else if(hPeriod==='month') key=s.date.slice(0,7).replace('-','년 ')+'월';
-    else if(hPeriod==='week'){
-      const w=getISOWeek(s.date);
-      key=s.date.slice(0,4)+'년 '+w+'주차';
-    }
-    else key=s.date;
-    if(!map[key]){map[key]={qty:0,cnt:0};}
-    map[key].qty+=(s.qty||0);
-    map[key].cnt++;
-  });
-  return Object.entries(map).sort((a,b)=>a[0].localeCompare(b[0]));
-}
-
-function renderHist(){
-  if(!ships.length && document.getElementById('htb')){
-    document.getElementById('htb').innerHTML='<tr class="nodata"><td colspan="7">출고이력이 없습니다. 출고 등록 버튼으로 추가해보세요.</td></tr>';
-    document.getElementById('histKpi').innerHTML='';
-    return;
-  }
-  initHistFilters();
-
-  const yr=document.getElementById('hfy').value;
-  const mo=document.getElementById('hfm').value;
-  let filtered=ships;
-  if(yr)filtered=filtered.filter(s=>s.date.startsWith(yr));
-  if(mo&&hPeriod==='day')filtered=filtered.filter(s=>s.date.slice(5,7)===mo);
-
-  // KPI
-  const totalQty=filtered.reduce((s,x)=>s+(x.qty||0),0);
-  const totalCnt=filtered.length;
-  const prods=[...new Set(filtered.map(x=>x.product))].length;
-  const partners=[...new Set(filtered.map(x=>x.name))].length;
-  document.getElementById('histKpi').innerHTML=`
-    <div class="hkpi"><div class="hkpi-lbl">총 출고 수량</div><div class="hkpi-val">${totalQty.toLocaleString()}<span style="font-size:14px;font-weight:400;color:var(--t3);margin-left:4px">대</span></div></div>
-    <div class="hkpi"><div class="hkpi-lbl">출고 건수</div><div class="hkpi-val">${totalCnt.toLocaleString()}<span style="font-size:14px;font-weight:400;color:var(--t3);margin-left:4px">건</span></div></div>
-    <div class="hkpi"><div class="hkpi-lbl">제품 종류</div><div class="hkpi-val">${prods}<span style="font-size:14px;font-weight:400;color:var(--t3);margin-left:4px">종</span></div></div>
-    <div class="hkpi"><div class="hkpi-lbl">거래처 수</div><div class="hkpi-val">${partners}<span style="font-size:14px;font-weight:400;color:var(--t3);margin-left:4px">곳</span></div></div>
-  `;
-
-  // 차트
-  const grouped=groupShips(ships);
-  const labels=grouped.map(x=>x[0]);
-  const qtys=grouped.map(x=>x[1].qty);
-  if(histChart)histChart.destroy();
-  histChart=new Chart(document.getElementById('histChart'),{
-    type:hPeriod==='day'?'line':'bar',
-    data:{labels,datasets:[{
-      label:'출고 수량(대)',
-      data:qtys,
-      backgroundColor:hPeriod==='day'?'rgba(0,58,112,.1)':'rgba(0,58,112,.75)',
-      borderColor:'#003A70',
-      borderWidth:hPeriod==='day'?2:0,
-      borderRadius:hPeriod==='day'?0:3,
-      fill:hPeriod==='day',
-      tension:.3,
-      pointRadius:hPeriod==='day'?3:0
-    }]},
-    options:{responsive:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#FFFFFF',titleColor:'#1A2332',bodyColor:'#4A5568',borderColor:'#E4E7EC',borderWidth:1,callbacks:{label:ctx=>` ${ctx.parsed.y.toLocaleString()}대`}}},scales:{x:{grid:{display:false},ticks:{color:'#9AA5B4',font:{size:11}},border:{display:false}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#9AA5B4',font:{size:11}},border:{display:false}}}}
-  });
-
-  // 테이블
-  const sorted=[...filtered].sort((a,b)=>b.date.localeCompare(a.date));
-  const tp=Math.max(1,Math.ceil(sorted.length/hPs));
-  if(hPg>tp)hPg=tp;
-  const sl=sorted.slice((hPg-1)*hPs,hPg*hPs);
-  const htb=document.getElementById('htb');
-  if(!sl.length){htb.innerHTML='<tr class="nodata"><td colspan="7">해당 기간에 출고이력이 없습니다.</td></tr>';}
-  else{
-    htb.innerHTML=sl.map(s=>{
-      const c2=s.product==='에어리소닉'?'ce':s.product==='소닉플로우'?'cs':s.product==='슈퍼플로우'?'cu':'co';
-      return `<tr>
-        <td style="white-space:nowrap;color:var(--t2)">${s.date}</td>
-        <td><strong>${e(s.name)}</strong></td>
-        <td><span class="chip ${c2}">${e(s.product)}</span></td>
-        <td><span class="ctag">${e(s.category||'')}</span></td>
-        <td><span class="qcell">${(s.qty||0).toLocaleString()}</span></td>
-        <td style="color:var(--t3);font-size:11px">${e(s.note||'—')}</td>
-        <td><div class="ract"><button class="bico" onclick="openShipE('${s._id}')">수정</button><button class="bico del" onclick="askDelShip('${s._id}')">삭제</button></div></td>
-      </tr>`;
-    }).join('');
-  }
-  // 페이지네이션
-  const hs=(hPg-1)*hPs+1,hen=Math.min(hPg*hPs,filtered.length);
-  document.getElementById('hpgi').innerHTML=`<span>${hs}–${hen}</span> / ${filtered.length}건`;
-  const hbs=document.getElementById('hpgbs');hbs.innerHTML='';
-  const hab=(lbl,pp,dis,act)=>{const b=document.createElement('button');b.className='pgb'+(act?' act':'');b.textContent=lbl;b.disabled=dis;b.onclick=()=>{hPg=pp;renderHist();};hbs.appendChild(b);};
-  hab('◀',hPg-1,hPg===1,false);
-  pgr(hPg,tp).forEach(pp=>{if(pp==='…'){const sp=document.createElement('span');sp.textContent='…';sp.style.cssText='color:var(--t3);padding:0 4px';hbs.appendChild(sp);}else hab(pp,pp,false,pp===hPg);});
-  hab('▶',hPg+1,hPg===tp,false);
-}
-
-function openShipM(){
-  shipEid=null;
-  document.getElementById('shipMtitle').textContent='출고 등록';
-  document.getElementById('shipDate').value=new Date().toISOString().slice(0,10);
-  document.getElementById('shipName').value='';
-  document.getElementById('shipQty').value='';
-  document.getElementById('shipNote').value='';
-  document.getElementById('shipProd').value='에어리소닉';
-  document.getElementById('shipCat').value='스포츠센터';
-  document.getElementById('shipOv').classList.add('open');
-  document.getElementById('shipName').focus();
-}
-function openShipE(id){
-  const s=ships.find(x=>x._id===id);if(!s)return;
-  shipEid=id;
-  document.getElementById('shipMtitle').textContent='출고이력 수정';
-  document.getElementById('shipDate').value=s.date;
-  document.getElementById('shipName').value=s.name;
-  document.getElementById('shipQty').value=s.qty;
-  document.getElementById('shipNote').value=s.note||'';
-  document.getElementById('shipProd').value=s.product;
-  document.getElementById('shipCat').value=s.category||'스포츠센터';
-  document.getElementById('shipOv').classList.add('open');
-}
-function closeShipM(){document.getElementById('shipOv').classList.remove('open');}
-async function saveShip(){
-  const date=document.getElementById('shipDate').value;
-  const name=document.getElementById('shipName').value.trim();
-  const qty=parseInt(document.getElementById('shipQty').value)||0;
-  const product=document.getElementById('shipProd').value;
-  const category=document.getElementById('shipCat').value;
-  const note=document.getElementById('shipNote').value.trim();
-  if(!date||!name||!qty){alert('날짜, 거래처명, 수량은 필수입니다.');return;}
-  const btn=document.getElementById('shipSavBtn');btn.disabled=true;btn.textContent='저장 중...';
-  try{
-    const data={date,name,product,category,qty,note};
-    if(shipEid)await db.collection('shipments').doc(shipEid).update(data);
-    else await db.collection('shipments').add(data);
-    closeShipM();
-  }catch(err){alert('저장 실패: '+err.message);}
-  btn.disabled=false;btn.textContent='저장';
-}
-function askDelShip(id){
-  const s=ships.find(x=>x._id===id);if(!s)return;
-  shipDid=id;
-  document.getElementById('shipCnm').textContent=`${s.date} / ${s.name} ${s.qty}대`;
-  document.getElementById('shipCv').classList.add('open');
-}
-function closeShipCv(){document.getElementById('shipCv').classList.remove('open');shipDid=null;}
-async function doDelShip(){if(!shipDid)return;try{await db.collection('shipments').doc(shipDid).delete();}catch(err){alert('삭제 실패: '+err.message);}closeShipCv();}
-document.getElementById('shipOv').addEventListener('click',ev=>{if(ev.target===ev.currentTarget)closeShipM();});
-document.getElementById('shipCv').addEventListener('click',ev=>{if(ev.target===ev.currentTarget)closeShipCv();});
-
+</script>
 </body>
 </html>
