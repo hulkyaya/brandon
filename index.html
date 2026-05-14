@@ -6,8 +6,11 @@
 <title>OA Corporation — 오프라인 제휴처 현황</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Barlow+Condensed:wght@500;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
@@ -157,7 +160,8 @@ tbody td:first-child{color:var(--text);font-weight:600;font-size:13px}
 .map-flt-label{font-size:11px;color:var(--t3);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
 .map-leg-bar{display:flex;align-items:center;gap:14px;padding:8px 20px;border-bottom:1px solid var(--bd);flex-wrap:wrap;background:#FAFBFD}
 .ml-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2);white-space:nowrap}
-.ml-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+/* ✅ 범례 dot 원형으로 변경 */
+.ml-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 #leafMap{height:560px;width:100%}
 .map-footer{padding:10px 20px;font-size:11px;color:var(--t3);border-top:1px solid var(--bd);background:var(--sf2)}
 .map-footer strong{color:var(--t2)}
@@ -729,12 +733,42 @@ function rcharts(){
   pc2=new Chart(document.getElementById('pc'),{type:'bar',data:{labels:pe.map(x=>x[0]),datasets:[{data:pe.map(x=>x[1]),backgroundColor:pe.map(x=>PCOL[x[0]]||'#9AA5B4'),borderRadius:2,borderSkipped:false}]},options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x}개소`},backgroundColor:'#FFFFFF',titleColor:'#1A2332',bodyColor:'#4A5568',borderColor:'#E4E7EC',borderWidth:1}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#9AA5B4',font:{size:10}},border:{display:false}},y:{grid:{display:false},ticks:{color:'#4A5568',font:{size:11}},border:{display:false}}}}});
 }
 function getCoord(p){if(p.lat&&p.lng)return[p.lat,p.lng];return null;}
-function mkIcon(col){return L.divIcon({className:'',html:`<div style="width:10px;height:10px;border-radius:2px;background:${col};border:2px solid rgba(255,255,255,.95);box-shadow:0 2px 6px rgba(0,0,0,.3)"></div>`,iconSize:[10,10],iconAnchor:[5,5],popupAnchor:[0,-8]});}
+
+/* ✅ 수량 비례 원형 마커 */
+function mkIcon(col, qty){
+  const allQty = pts.map(p => p.qty || 0);
+  const maxQ = Math.max(...allQty, 1);
+  const minS = 10, maxS = 36;
+  const s = Math.round(minS + ((qty || 0) / maxQ) * (maxS - minS));
+  const half = Math.round(s / 2);
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:${s}px;height:${s}px;border-radius:50%;background:${col};border:2px solid rgba(255,255,255,.9);box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:0.88"></div>`,
+    iconSize:[s,s],
+    iconAnchor:[half,half],
+    popupAnchor:[0,-half]
+  });
+}
+
 function switchView(v){
   if(v==='map'){
     document.getElementById('listView').style.display='none';document.getElementById('mapView').style.display='block';
     document.getElementById('tabList').classList.remove('act');document.getElementById('tabMap').classList.add('act');
-    if(!leafMap){leafMap=L.map('leafMap').setView([36.5,127.8],7);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(leafMap);mGrp=L.layerGroup().addTo(leafMap);}
+    if(!leafMap){
+      leafMap=L.map('leafMap').setView([36.5,127.8],7);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(leafMap);
+      mGrp=L.markerClusterGroup({
+        maxClusterRadius:50,
+        iconCreateFunction:function(cluster){
+          const count=cluster.getChildCount();
+          const s=count>100?48:count>50?42:count>20?36:count>5?30:24;
+          return L.divIcon({
+            html:`<div style="width:${s}px;height:${s}px;border-radius:50%;background:var(--navy);border:3px solid rgba(255,255,255,.9);box-shadow:0 2px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:${s>36?15:13}px;font-weight:700;color:#fff">${count}</div>`,
+            className:'',iconSize:[s,s],iconAnchor:[s/2,s/2]
+          });
+        }
+      }).addTo(leafMap);
+    }
     renderMarkers();
   }else{
     document.getElementById('mapView').style.display='none';document.getElementById('listView').style.display='block';
@@ -746,7 +780,7 @@ function renderMarkers(){
   const filtered=gmf();let placed=0,missed=[];
   filtered.forEach(p=>{
     const coord=getCoord(p);
-    if(coord){L.marker(coord,{icon:mkIcon(PCOL[p.product]||'#9AA5B4')}).bindPopup(`<div style="font-family:'Noto Sans KR',sans-serif;min-width:160px"><div class="pop-name">${e(p.name)}</div><div class="pop-row">제품: <b>${e(p.product)}</b></div><div class="pop-row">업종: <b>${e(p.category)}</b></div><div class="pop-row">수량: <b>${(p.qty||0).toLocaleString()}대</b></div></div>`,{maxWidth:230}).addTo(mGrp);placed++;}
+    if(coord){L.marker(coord,{icon:mkIcon(PCOL[p.product]||'#9AA5B4', p.qty||0)}).bindPopup(`<div style="font-family:'Noto Sans KR',sans-serif;min-width:160px"><div class="pop-name">${e(p.name)}</div><div class="pop-row">제품: <b>${e(p.product)}</b></div><div class="pop-row">업종: <b>${e(p.category)}</b></div><div class="pop-row">수량: <b>${(p.qty||0).toLocaleString()}대</b></div></div>`,{maxWidth:230}).addTo(mGrp);placed++;}
     else missed.push(p.name);
   });
   document.getElementById('mapCnt').textContent=`${placed}개 표시 / 전체 ${filtered.length}개`;
