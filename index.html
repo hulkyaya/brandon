@@ -727,8 +727,11 @@ initApp();
 function bflt(){
   const cats=[...new Set(pts.map(p=>p.category))].sort();
   const prods=[...new Set(pts.map(p=>p.product))].sort();
-  ['fc','mfc'].forEach(id=>{const el=document.getElementById(id),v=el.value;el.innerHTML='<option value="">전체 업종</option>';cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;el.appendChild(o);});el.value=v;});
-  ['fp','mfp'].forEach(id=>{const el=document.getElementById(id),v=el.value;el.innerHTML='<option value="">전체 제품</option>';prods.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;el.appendChild(o);});el.value=v;});
+  const mapPts=pts.filter(p=>SHIP_PRODUCTS.includes(p.product));
+  const mapCats=[...new Set(mapPts.map(p=>p.category))].sort();
+  const mapProds=[...new Set(mapPts.map(p=>p.product))].sort();
+  [['fc',cats],['mfc',mapCats]].forEach(([id,list])=>{const el=document.getElementById(id),v=el.value;el.innerHTML='<option value="">전체 업종</option>';list.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;el.appendChild(o);});el.value=list.includes(v)?v:'';});
+  [['fp',prods],['mfp',mapProds]].forEach(([id,list])=>{const el=document.getElementById(id),v=el.value;el.innerHTML='<option value="">전체 제품</option>';list.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;el.appendChild(o);});el.value=list.includes(v)?v:'';});
 }
 function gf(){
   const q=document.getElementById('sinp').value.toLowerCase();
@@ -736,7 +739,7 @@ function gf(){
   return pts.filter(p=>(!q||p.name.toLowerCase().includes(q))&&(!fc||p.category===fc)&&(!fp||p.product===fp))
     .sort((a,b)=>{const av=sk_==='qty'?a[sk_]:(a[sk_]||''),bv=sk_==='qty'?b[sk_]:(b[sk_]||'');return typeof av==='number'?sd*(av-bv):sd*av.localeCompare(bv,'ko');});
 }
-function gmf(){const fc=document.getElementById('mfc').value,fp=document.getElementById('mfp').value;return pts.filter(p=>(!fc||p.category===fc)&&(!fp||p.product===fp));}
+function gmf(){const fc=document.getElementById('mfc').value,fp=document.getElementById('mfp').value;return pts.filter(p=>SHIP_PRODUCTS.includes(p.product)&&(!fc||p.category===fc)&&(!fp||p.product===fp));}
 function af(){pg=1;rtbl();}
 function sb(k){if(sk_===k)sd=-sd;else{sk_=k;sd=1;}['sn','sp2','sc2','sq2'].forEach(x=>document.getElementById(x).textContent='');const m={name:'sn',product:'sp2',category:'sc2',qty:'sq2'};document.getElementById(m[k]).textContent=sd===1?' ↑':' ↓';pg=1;rtbl();}
 function uall(){ukpi();uprod();rtbl();rcharts();}
@@ -847,13 +850,9 @@ function renderMarkers(){
 function onMapFilter(){renderMarkers();}
 function renderShipDash(){
   const fc=document.getElementById('mfc').value,fp=document.getElementById('mfp').value;
-  const filtered=gmf().filter(p=>SHIP_PRODUCTS.includes(p.product));
-  const scopeParts=[];
-  if(fp&&SHIP_PRODUCTS.includes(fp))scopeParts.push(fp);
-  else if(!fp)scopeParts.push('에어리소닉 · 소닉플로우');
-  else scopeParts.push('해당 없음');
-  if(fc)scopeParts.push(fc);
-  document.getElementById('shipScope').textContent=scopeParts.join(' · ');
+  const filtered=gmf();
+  const scope=[fp||'에어리소닉 · 소닉플로우',fc].filter(Boolean).join(' · ');
+  document.getElementById('shipScope').textContent=scope;
   const totalQty=filtered.reduce((s,p)=>s+(p.qty||0),0);
   const totalCnt=filtered.length;
   document.getElementById('shipQty').textContent=totalQty.toLocaleString();
