@@ -686,6 +686,7 @@ const SEED=[
 const PCOL={'에어리소닉':'#003A70','소닉플로우':'#1A7A4A','슈퍼플로우':'#B8860B','오아 퀵차지팩':'#5B4B8A','보아르 플라미오 히터':'#C0392B','기타':'#9AA5B4'};
 const CC=['#003A70','#1A6EBD','#007BA7','#1A7A4A','#5B4B8A','#B8860B','#C0392B','#4A90D9'];
 const DRYER=['에어리소닉','소닉플로우','슈퍼플로우'];
+const SHIP_PRODUCTS=['에어리소닉','소닉플로우'];
 
 let db,pts=[],eid=null,did=null,pg=1,ps=20,sk_='name',sd=1,cc=null,pc2=null;
 let leafMap=null,mGrp=null;
@@ -739,10 +740,10 @@ function gmf(){const fc=document.getElementById('mfc').value,fp=document.getElem
 function af(){pg=1;rtbl();}
 function sb(k){if(sk_===k)sd=-sd;else{sk_=k;sd=1;}['sn','sp2','sc2','sq2'].forEach(x=>document.getElementById(x).textContent='');const m={name:'sn',product:'sp2',category:'sc2',qty:'sq2'};document.getElementById(m[k]).textContent=sd===1?' ↑':' ↓';pg=1;rtbl();}
 function uall(){ukpi();uprod();rtbl();rcharts();}
-function ukpi(){const d=pts.filter(p=>DRYER.includes(p.product));an('kT',d.length);an('kQ',d.reduce((s,p)=>s+(p.qty||0),0));an('kP',new Set(pts.map(p=>p.product)).size);an('kC',new Set(pts.map(p=>p.category)).size);}
+function ukpi(){const d=pts.filter(p=>SHIP_PRODUCTS.includes(p.product));an('kT',d.length);an('kQ',d.reduce((s,p)=>s+(p.qty||0),0));an('kP',new Set(d.map(p=>p.product)).size);an('kC',new Set(d.map(p=>p.category)).size);}
 function an(id,t){const el=document.getElementById(id);const s=parseInt(el.textContent.replace(/,/g,''))||0;const dur=600,stp=16;let x=0;const tm=setInterval(()=>{x+=stp;const pp=Math.min(x/dur,1);el.textContent=Math.round(s+(t-s)*(pp<.5?2*pp*pp:-1+(4-2*pp)*pp)).toLocaleString();if(x>=dur)clearInterval(tm);},stp);}
 function uprod(){
-  const bp={};pts.forEach(p=>{if(!bp[p.product])bp[p.product]={n:0,q:0};bp[p.product].n++;bp[p.product].q+=p.qty||0;});
+  const bp={};pts.filter(p=>SHIP_PRODUCTS.includes(p.product)).forEach(p=>{if(!bp[p.product])bp[p.product]={n:0,q:0};bp[p.product].n++;bp[p.product].q+=p.qty||0;});
   const mx=Math.max(1,...Object.values(bp).map(v=>v.n));
   const c=document.getElementById('pbars');c.innerHTML='';
   Object.entries(bp).sort((a,b)=>b[1].n-a[1].n).forEach(([prod,v])=>{
@@ -845,7 +846,6 @@ function renderMarkers(){
 }
 function onMapFilter(){renderMarkers();}
 function renderShipDash(){
-  const SHIP_PRODUCTS=['에어리소닉','소닉플로우'];
   const fc=document.getElementById('mfc').value,fp=document.getElementById('mfp').value;
   const filtered=gmf().filter(p=>SHIP_PRODUCTS.includes(p.product));
   const scopeParts=[];
