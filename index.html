@@ -152,7 +152,38 @@ tbody td:first-child{color:var(--text);font-weight:600;font-size:13px}
 
 /* MAP */
 #mapView{display:none}
+.map-grid{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+@media (max-width:1100px){.map-grid{grid-template-columns:1fr}}
 .map-wrap{background:var(--sf);border:1px solid var(--bd);border-top:3px solid var(--navy);border-radius:var(--r);overflow:hidden;box-shadow:var(--shd)}
+
+/* SHIP DASHBOARD */
+.ship-card{background:var(--sf);border:1px solid var(--bd);border-top:3px solid var(--teal);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shd)}
+.ship-card.accent{border-top-color:var(--navy)}
+.ship-title{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.ship-title .ship-badge{font-size:9px;color:var(--teal);font-weight:700;letter-spacing:.08em}
+.ship-kpi{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bd);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:0}
+.ship-kpi-i{background:var(--sf);padding:12px 14px}
+.ship-kpi-l{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:6px}
+.ship-kpi-v{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;color:var(--navy);line-height:1}
+.ship-kpi-s{font-size:10px;color:var(--t3);margin-top:3px}
+.ship-row{display:flex;flex-direction:column;gap:9px}
+.ship-it{display:flex;flex-direction:column;gap:4px}
+.ship-it-h{display:flex;align-items:center;justify-content:space-between;font-size:11px}
+.ship-it-n{display:flex;align-items:center;gap:6px;color:var(--t2);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ship-it-d{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ship-it-q{color:var(--navy);font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:15px;white-space:nowrap}
+.ship-it-bar{height:3px;background:var(--sf3);border-radius:0;overflow:hidden}
+.ship-it-fill{height:100%;transition:width .6s ease}
+.ship-rank{display:flex;flex-direction:column;gap:7px}
+.ship-rk{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--bd)}
+.ship-rk:last-child{border-bottom:none}
+.ship-rk-no{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--t3);width:18px;text-align:center;flex-shrink:0}
+.ship-rk.top .ship-rk-no{color:var(--navy)}
+.ship-rk-body{flex:1;min-width:0}
+.ship-rk-n{font-size:11px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ship-rk-m{font-size:10px;color:var(--t3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ship-rk-q{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--teal);white-space:nowrap}
+.ship-empty{font-size:11px;color:var(--t3);text-align:center;padding:14px 0}
 .map-bar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--bd);flex-wrap:wrap;gap:8px}
 .map-title{font-size:14px;font-weight:700;color:var(--navy)}
 .map-note{font-size:11px;color:var(--t3)}
@@ -260,19 +291,42 @@ tbody td:first-child{color:var(--text);font-weight:600;font-size:13px}
     </div>
   </div>
   <div id="mapView">
-    <div class="map-wrap">
-      <div class="map-bar">
-        <div class="map-title">거래처 위치 지도 <span id="mapCnt" style="font-size:12px;color:var(--t3);font-weight:400;margin-left:6px"></span></div>
-        <div class="map-note">Kakao Local API 기반 정확 좌표</div>
+    <div class="map-grid">
+      <div class="map-wrap">
+        <div class="map-bar">
+          <div class="map-title">거래처 위치 지도 <span id="mapCnt" style="font-size:12px;color:var(--t3);font-weight:400;margin-left:6px"></span></div>
+          <div class="map-note">Kakao Local API 기반 정확 좌표</div>
+        </div>
+        <div class="map-flt-bar">
+          <span class="map-flt-label">필터</span>
+          <select class="flt" id="mfc" onchange="onMapFilter()"><option value="">전체 업종</option></select>
+          <select class="flt" id="mfp" onchange="onMapFilter()"><option value="">전체 제품</option></select>
+        </div>
+        <div class="map-leg-bar" id="mapLeg"></div>
+        <div id="leafMap"></div>
+        <div class="map-footer" id="mapFoot"></div>
       </div>
-      <div class="map-flt-bar">
-        <span class="map-flt-label">필터</span>
-        <select class="flt" id="mfc" onchange="renderMarkers()"><option value="">전체 업종</option></select>
-        <select class="flt" id="mfp" onchange="renderMarkers()"><option value="">전체 제품</option></select>
+      <div class="rcol">
+        <div class="ship-card accent">
+          <div class="ship-title">출고 현황 요약 <span class="ship-badge" id="shipScope">전체</span></div>
+          <div class="ship-kpi">
+            <div class="ship-kpi-i"><div class="ship-kpi-l">총 출고 대수</div><div class="ship-kpi-v" id="shipQty">0</div><div class="ship-kpi-s">대</div></div>
+            <div class="ship-kpi-i"><div class="ship-kpi-l">출고 거래처</div><div class="ship-kpi-v" id="shipCnt">0</div><div class="ship-kpi-s">개소</div></div>
+          </div>
+        </div>
+        <div class="ship-card">
+          <div class="ship-title">제품별 출고</div>
+          <div class="ship-row" id="shipByProd"></div>
+        </div>
+        <div class="ship-card">
+          <div class="ship-title">업종별 출고</div>
+          <div class="ship-row" id="shipByCat"></div>
+        </div>
+        <div class="ship-card">
+          <div class="ship-title">출고 TOP 5</div>
+          <div class="ship-rank" id="shipTop"></div>
+        </div>
       </div>
-      <div class="map-leg-bar" id="mapLeg"></div>
-      <div id="leafMap"></div>
-      <div class="map-footer" id="mapFoot"></div>
     </div>
   </div>
 </main>
@@ -776,7 +830,8 @@ function switchView(v){
   }
 }
 function renderMarkers(){
-  if(!leafMap)return;mGrp.clearLayers();
+  if(!leafMap){renderShipDash();return;}
+  mGrp.clearLayers();
   const filtered=gmf();let placed=0,missed=[];
   filtered.forEach(p=>{
     const coord=getCoord(p);
@@ -786,6 +841,40 @@ function renderMarkers(){
   document.getElementById('mapCnt').textContent=`${placed}개 표시 / 전체 ${filtered.length}개`;
   document.getElementById('mapLeg').innerHTML=[...new Set(filtered.map(p=>p.product))].map(p=>`<div class="ml-item"><div class="ml-dot" style="background:${PCOL[p]||'#9AA5B4'}"></div>${p}</div>`).join('');
   document.getElementById('mapFoot').innerHTML=missed.length?`<strong>위치 미확인 ${missed.length}개:</strong> ${missed.slice(0,12).join(', ')}${missed.length>12?` 외 ${missed.length-12}개`:''}`:'' ;
+  renderShipDash();
+}
+function onMapFilter(){renderMarkers();}
+function renderShipDash(){
+  const filtered=gmf();
+  const fc=document.getElementById('mfc').value,fp=document.getElementById('mfp').value;
+  const scope=[fp,fc].filter(Boolean).join(' · ')||'전체';
+  document.getElementById('shipScope').textContent=scope;
+  const totalQty=filtered.reduce((s,p)=>s+(p.qty||0),0);
+  const totalCnt=filtered.length;
+  document.getElementById('shipQty').textContent=totalQty.toLocaleString();
+  document.getElementById('shipCnt').textContent=totalCnt.toLocaleString();
+
+  const byProd={};filtered.forEach(p=>{byProd[p.product]=(byProd[p.product]||0)+(p.qty||0);});
+  const pEntries=Object.entries(byProd).sort((a,b)=>b[1]-a[1]);
+  const pMax=Math.max(1,...pEntries.map(x=>x[1]));
+  const pBox=document.getElementById('shipByProd');
+  pBox.innerHTML=pEntries.length?pEntries.map(([n,q])=>{
+    const col=PCOL[n]||'#9AA5B4',pct=Math.round(q/pMax*100);
+    return `<div class="ship-it"><div class="ship-it-h"><div class="ship-it-n"><span class="ship-it-d" style="background:${col}"></span>${e(n)}</div><span class="ship-it-q">${q.toLocaleString()}</span></div><div class="ship-it-bar"><div class="ship-it-fill" style="width:${pct}%;background:${col}"></div></div></div>`;
+  }).join(''):'<div class="ship-empty">데이터 없음</div>';
+
+  const byCat={};filtered.forEach(p=>{byCat[p.category]=(byCat[p.category]||0)+(p.qty||0);});
+  const cEntries=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  const cMax=Math.max(1,...cEntries.map(x=>x[1]));
+  const cBox=document.getElementById('shipByCat');
+  cBox.innerHTML=cEntries.length?cEntries.map(([n,q],i)=>{
+    const col=CC[i%CC.length],pct=Math.round(q/cMax*100);
+    return `<div class="ship-it"><div class="ship-it-h"><div class="ship-it-n"><span class="ship-it-d" style="background:${col}"></span>${e(n)}</div><span class="ship-it-q">${q.toLocaleString()}</span></div><div class="ship-it-bar"><div class="ship-it-fill" style="width:${pct}%;background:${col}"></div></div></div>`;
+  }).join(''):'<div class="ship-empty">데이터 없음</div>';
+
+  const top=[...filtered].sort((a,b)=>(b.qty||0)-(a.qty||0)).slice(0,5);
+  const tBox=document.getElementById('shipTop');
+  tBox.innerHTML=top.length?top.map((p,i)=>`<div class="ship-rk${i<3?' top':''}"><div class="ship-rk-no">${i+1}</div><div class="ship-rk-body"><div class="ship-rk-n">${e(p.name)}</div><div class="ship-rk-m">${e(p.product)} · ${e(p.category)}</div></div><div class="ship-rk-q">${(p.qty||0).toLocaleString()}</div></div>`).join(''):'<div class="ship-empty">데이터 없음</div>';
 }
 function openM(){eid=null;document.getElementById('mtitle').textContent='제휴처 추가';['mn','mq'].forEach(id=>document.getElementById(id).value='');document.getElementById('mprod').value='에어리소닉';document.getElementById('mcat').value='스포츠센터';document.getElementById('ov').classList.add('open');document.getElementById('mn').focus();}
 function openE(id){const p=pts.find(x=>x._id===id);if(!p)return;eid=id;document.getElementById('mtitle').textContent='제휴처 수정';document.getElementById('mn').value=p.name;document.getElementById('mprod').value=p.product;document.getElementById('mcat').value=p.category;document.getElementById('mq').value=p.qty;document.getElementById('ov').classList.add('open');}
