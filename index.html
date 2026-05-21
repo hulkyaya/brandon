@@ -845,10 +845,15 @@ function renderMarkers(){
 }
 function onMapFilter(){renderMarkers();}
 function renderShipDash(){
-  const filtered=gmf();
+  const SHIP_PRODUCTS=['에어리소닉','소닉플로우'];
   const fc=document.getElementById('mfc').value,fp=document.getElementById('mfp').value;
-  const scope=[fp,fc].filter(Boolean).join(' · ')||'전체';
-  document.getElementById('shipScope').textContent=scope;
+  const filtered=gmf().filter(p=>SHIP_PRODUCTS.includes(p.product));
+  const scopeParts=[];
+  if(fp&&SHIP_PRODUCTS.includes(fp))scopeParts.push(fp);
+  else if(!fp)scopeParts.push('에어리소닉 · 소닉플로우');
+  else scopeParts.push('해당 없음');
+  if(fc)scopeParts.push(fc);
+  document.getElementById('shipScope').textContent=scopeParts.join(' · ');
   const totalQty=filtered.reduce((s,p)=>s+(p.qty||0),0);
   const totalCnt=filtered.length;
   document.getElementById('shipQty').textContent=totalQty.toLocaleString();
